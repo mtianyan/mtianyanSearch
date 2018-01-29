@@ -85,10 +85,11 @@
                                 </span>
                                 <span class="info">
                                     <label>发布时间：</label>
-                                    <span class="value">{% if s_type == "job" %}
-                                    {{ hits.create_date|slice:":-9" }}
+                                    <span class="value">{% if s_type == "article" %}
+                                     {{ hits.create_date }}
                                     {% else %}
-                                        {{ hits.create_date }}
+                                        {{ hits.create_date|slice:":-9" }}
+
                                     {% endif %}
                                     </span>
                                 </span>
