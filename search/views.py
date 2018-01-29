@@ -279,7 +279,7 @@ class SearchView(View):
                         answer_id = match_url.group(1)
                         hit_dict["url"] = "https://www.zhihu.com/question/{0}/answer/{1}".format(
                             question_id, answer_id)
-                        hit_dict["source_site"] = "知乎"
+                        hit_dict["source_site"] = "知乎问答"
                         # hit_dict["content"] = remove_tags(hit_dict["content"])
                         hit_list.append(hit_dict)
                     elif hit["_type"] == "question":
@@ -294,7 +294,7 @@ class SearchView(View):
                         hit_dict["create_date"] = hit["_source"]["crawl_time"]
                         hit_dict["url"] = hit["_source"]["url"]
                         hit_dict["score"] = hit["_score"]
-                        hit_dict["source_site"] = "知乎"
+                        hit_dict["source_site"] = "知乎问答"
                         # hit_dict["content"] = remove_tags(hit_dict["content"])
                         hit_list.append(hit_dict)
                     else:
@@ -311,7 +311,7 @@ class SearchView(View):
                         answer_id = match_url.group(1)
                         hit_dict["url"] = "https://www.zhihu.com/question/{0}/answer/{1}".format(
                             question_id, answer_id)
-                        hit_dict["source_site"] = "知乎"
+                        hit_dict["source_site"] = "知乎问答"
                         # hit_dict["content"] = remove_tags(hit_dict["content"])
                         hit_list.append(hit_dict)
                     elif hit["_type"] == "question":
@@ -320,7 +320,7 @@ class SearchView(View):
                         hit_dict["create_date"] = hit["_source"]["crawl_time"]
                         hit_dict["url"] = hit["_source"]["url"]
                         hit_dict["score"] = hit["_score"]
-                        hit_dict["source_site"] = "知乎"
+                        hit_dict["source_site"] = "知乎问答"
                         # hit_dict["content"] = remove_tags(hit_dict["content"])
                         hit_list.append(hit_dict)
                     else:

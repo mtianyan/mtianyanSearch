@@ -111,7 +111,7 @@
                 	<h6>热门搜索</h6>
                     <ul class="historyList">
                         {% for search in topn_search %}
-                        <li><a href="/search?q={{ search }}">{{ search }}</a></li>
+                        <li><a href="/search?q={{ search }}&s_type=article">{{ search }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -187,7 +187,7 @@
 		callback :pageselectCallback
 	});
 	function pageselectCallback(page_id, jq) {
-		window.location.href=search_url+'?q='+key_words+'&p='+page_id+"&s_type="+$(".searchItem.current").attr('data-type')
+		window.location.href=search_url+'?q='+key_words+'&p='+(page_id+1)+"&s_type="+$(".searchItem.current").attr('data-type')
 	}
 	
 	setHeight();
