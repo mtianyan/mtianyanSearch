@@ -29,26 +29,27 @@
         <div id="main">
         	<div class="sideBar">
             	
-                <div class="subfield">数据来源</div>
+                <div class="subfield">数据来源: </br>
+                实时已爬取数据统计</div>
                 <ul class="subfieldContext">
                 	<li>
                     	<span class="name">伯乐在线</span>
-						<span class="unit">(4955)</span>
+						<span class="unit">{{jobbole_count}}</span>
                     </li>
                     <li>
                     	<span class="name">知乎</span>
-						<span class="unit">(70480)</span>
+						<span class="unit">{{zhihu_count}}</span>
                     </li>
                     <li>
                     	<span class="name">拉勾网</span>
-						<span class="unit">(9862)</span>
+						<span class="unit">{{job_count}}</span>
                     </li>
-                    <li class="more">
+<!--                     <li class="more">
                     	<a href="javascript:;">
                         	<span class="text">更多</span>
                         	<i class="moreIcon"></i>
                         </a>
-                    </li>
+                    </li> -->
                 </ul>
                 
                             
@@ -65,7 +66,7 @@
                     {% for hits in all_hits %}
                     <div class="resultItem">
                             <div class="itemHead">
-                                <a href="{{ hits.url }}"  target="_blank" class="title">{% if s_type == "job"%}{% autoescape off %}{{ hits.title }} | {{ hits.company_name }}{% endautoescape %}
+                                <a href="{{ hits.url }}"  target="_blank" class="title">{% if s_type == "job"%}{% autoescape off %}{{ hits.title }}{% endautoescape %} | {% autoescape off %}{{ hits.company_name }}{% endautoescape %}
                                 {% else %}{% autoescape off %}{{ hits.title }}{% endautoescape %}{% endif %}</a>
                                 <span class="divsion">-</span>
                                 <span class="fileType">

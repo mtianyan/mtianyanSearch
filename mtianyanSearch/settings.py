@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '*8(=c6%u)y9#uo0w7yz*56e4+6=43^0el0p64qut!#s(k#$11-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -124,3 +123,14 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR,'static')
 ]
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+DEFAULT_FILE_STORAGE = 'qiniustorage.backends.QiniuMediaStorage'
+STATICFILES_STORAGE  = 'qiniustorage.backends.QiniuStaticStorage'
+
+QINIU_ACCESS_KEY = 'h_r41Eu27LsUkO5lS99TLxWjwJg9CXA_Pz2dZ5k8'
+QINIU_SECRET_KEY = 'xp2UcNU0AGMYhMHCkaZKdnJUqSuq1EPqPaNPuf7Q'
+QINIU_BUCKET_NAME = 'search'
+QINIU_BUCKET_DOMAIN = 'searchstatic.mtianyan.cn'
+QINIU_SECURE_URL = 0

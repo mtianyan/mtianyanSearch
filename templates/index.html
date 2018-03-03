@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 {% load  staticfiles %}
 <head>
+<meta name="baidu-site-verification" content="nPxypLjNNn" />
 <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>mtianyan-search 垂直领域搜索引擎</title>
@@ -13,7 +14,7 @@
 	<div id="bd">
         <div id="main">
         	<h1 class="title">
-            	<div class="logo large"></div>
+            	<a href="https://www.jianshu.com/u/db9a7a0daa1f"><div class="logo large"></div></a>
             </h1>
             <div class="nav ue-clear">
             	<ul class="searchList">
@@ -95,7 +96,7 @@
                 async: true,
                 success: function(data) {
                     for (var i=0;i<data.length;i++){
-                        tmpHtml += '<li><a href="'+search_url+'?q='+data[i]+'&s_type='+$(".searchItem.current").attr('data-type')+'">'+data[i]+'</a></li>'
+                        tmpHtml += '<li><a href="'+search_url+'?q='+data[i].slice(0,35)+'&s_type='+$(".searchItem.current").attr('data-type')+'">'+data[i]+'</a></li>'
                     }
                     $(".dataList").html("")
                     $(".dataList").append(tmpHtml);

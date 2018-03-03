@@ -1,3 +1,4 @@
+import pickle
 import re
 
 from django.shortcuts import render
@@ -21,6 +22,7 @@ redis_cli = redis.StrictRedis()
 
 class IndexView(View):
     # 首页
+
     def get(self, request):
         topn_search_clean = []
         topn_search = redis_cli.zrevrangebyscore(
@@ -33,6 +35,7 @@ class IndexView(View):
 
 
 class SearchSuggest(View):
+
     def get(self, request):
         key_words = request.GET.get('s', '')
         current_page = request.GET.get('s_type', '')
@@ -106,6 +109,7 @@ class SearchSuggest(View):
 
 
 class SearchView(View):
+
     def get(self, request):
         key_words = request.GET.get("q", "")
 
@@ -121,7 +125,22 @@ class SearchView(View):
             topn_search_clean.append(topn_key)
         topn_search = topn_search_clean
         # 获取伯乐在线的文章数量
+
         jobbole_count = redis_cli.get("jobbole_count")
+        if jobbole_count:
+            jobbole_count = pickle.loads(jobbole_count)
+        else:
+            jobbole_count = 0
+        job_count = redis_cli.get("job_count")
+        if job_count:
+            job_count = pickle.loads(job_count)
+        else:
+            job_count = 0
+        zhihu_count = redis_cli.get("zhihu_count")
+        if zhihu_count:
+            zhihu_count = pickle.loads(zhihu_count)
+        else:
+            zhihu_count = 0
 
         # 当前要获取第几页的数据
         page = request.GET.get("p", "1")
@@ -135,6 +154,7 @@ class SearchView(View):
         if s_type == "article":
             response = client.search(
                 index="jobbole",
+                request_timeout=60,
                 body={
                     "query": {
                         "multi_match": {
@@ -157,6 +177,7 @@ class SearchView(View):
         elif s_type == "job":
             response = client.search(
                 index="lagou",
+                request_timeout=60,
                 body={
                     "query": {
                         "multi_match": {
@@ -178,11 +199,13 @@ class SearchView(View):
                         "post_tags": ['</span>'],
                         "fields": {
                             "title": {},
-                            "content": {},
+                            "job_desc": {},
+                            "company_name": {},
                         }}})
         elif s_type == "question":
             response = client.search(
                 index="zhihu",
+                request_timeout=60,
                 body={
                     "query": {
                         "multi_match": {
@@ -201,6 +224,7 @@ class SearchView(View):
                         "fields": {
                             "title": {},
                             "content": {},
+                            "author_name": {},
                         }}})
 
         end_time = datetime.now()
@@ -219,7 +243,8 @@ class SearchView(View):
                     else:
                         hit_dict["title"] = hit["_source"]["title"]
                     if "content" in hit["highlight"]:
-                        hit_dict["content"] = "".join(hit["highlight"]["content"])
+                        hit_dict["content"] = "".join(
+                            hit["highlight"]["content"])
                     else:
                         hit_dict["content"] = hit["_source"]["content"]
                     hit_dict["create_date"] = hit["_source"]["create_date"]
@@ -228,7 +253,7 @@ class SearchView(View):
                     hit_dict["source_site"] = "伯乐在线"
                     hit_list.append(hit_dict)
                 except:
-                    error_nums = error_nums +1
+                    error_nums = error_nums + 1
         elif s_type == "job":
             error_nums = 0
             for hit in response["hits"]["hits"]:
@@ -239,7 +264,8 @@ class SearchView(View):
                     else:
                         hit_dict["title"] = hit["_source"]["title"]
                     if "job_desc" in hit["highlight"]:
-                        hit_dict["content"] = "".join(hit["highlight"]["job_desc"])
+                        hit_dict["content"] = "".join(
+                            hit["highlight"]["job_desc"])
                     else:
                         hit_dict["content"] = hit["_source"]["job_desc"]
                     hit_dict["create_date"] = hit["_source"]["publish_time"]
@@ -264,11 +290,13 @@ class SearchView(View):
                 try:
                     if hit["_type"] == "answer":
                         if "author_name" in hit["highlight"]:
-                            hit_dict["title"] = "".join(hit["highlight"]["author_name"])
+                            hit_dict["title"] = "".join(
+                                hit["highlight"]["author_name"])
                         else:
                             hit_dict["title"] = hit["_source"]["author_name"]
                         if "content" in hit["highlight"]:
-                            hit_dict["content"] = "".join(hit["highlight"]["content"])
+                            hit_dict["content"] = "".join(
+                                hit["highlight"]["content"])
                         else:
                             hit_dict["content"] = hit["_source"]["content"]
                         hit_dict["create_date"] = hit["_source"]["update_time"]
@@ -284,11 +312,13 @@ class SearchView(View):
                         hit_list.append(hit_dict)
                     elif hit["_type"] == "question":
                         if "title" in hit["highlight"]:
-                            hit_dict["title"] = "".join(hit["highlight"]["title"])
+                            hit_dict["title"] = "".join(
+                                hit["highlight"]["title"])
                         else:
                             hit_dict["title"] = hit["_source"]["title"]
                         if "content" in hit["highlight"]:
-                            hit_dict["content"] = "".join(hit["highlight"]["content"])
+                            hit_dict["content"] = "".join(
+                                hit["highlight"]["content"])
                         else:
                             hit_dict["content"] = hit["_source"]["content"]
                         hit_dict["create_date"] = hit["_source"]["crawl_time"]
@@ -340,9 +370,12 @@ class SearchView(View):
                                                "last_seconds": last_seconds,
                                                "topn_search": topn_search,
                                                "jobbole_count": jobbole_count,
-                                               "s_type":s_type,
+                                               "s_type": s_type,
+                                               "job_count": job_count,
+                                               "zhihu_count": zhihu_count,
                                                })
 
     #
 from django.views.generic.base import RedirectView
-favicon_view = RedirectView.as_view(url='/static/favicon.ico', permanent=True)
+favicon_view = RedirectView.as_view(
+    url='http://searchstatic.mtianyan.cn/static/favicon.ico', permanent=True)
