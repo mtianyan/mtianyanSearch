@@ -3,7 +3,7 @@ html{*overflow:auto;}
 #main{width:730px;margin:75px auto 0;}
 #main h1.title{width:600px;}
 #bd{margin-bottom:20px;}
-.logo.large{margin:0px auto 10px auto;width:342px;height:144px;background: url(../img/logo.png) no-repeat center center;}
+.logo.large{margin:0px auto 10px auto;width:342px;height:144px;background: url(../images/logo.png) no-repeat center center;}
 
 /*nav样式*/
 .nav{margin-bottom:10px;}
@@ -13,8 +13,8 @@ html{*overflow:auto;}
 
 /*input搜索区域*/
 .inputArea{position:relative;margin-bottom:65px;}
-.inputArea .searchInput{border:1px solid #bfbfbf;padding:0 15px;outline:none;height:40px;*height:39px;*line-height:40px;width:520px; background:url(../img/inputbg.png);font-size:14px;}
-.inputArea .searchButton{position:absolute;left:550px;*left:552px;*top:1px;width:106px;height:42px;*height:41px;background:url(../img/seachbtn.png) no-repeat;border:none;cursor:pointer;}
+.inputArea .searchInput{border:1px solid #bfbfbf;padding:0 15px;outline:none;height:40px;*height:39px;*line-height:40px;width:520px; background:url(../images/inputbg.png);font-size:14px;}
+.inputArea .searchButton{position:absolute;left:550px;*left:552px;*top:1px;width:106px;height:42px;*height:41px;background:url(../images/seachbtn.png) no-repeat;border:none;cursor:pointer;}
 /*高级搜索*/
 .inputArea .advanced{position:absolute;font-size:14px;left:674px;top:12px;text-decoration:underline;}
 /*联想下拉区域*/

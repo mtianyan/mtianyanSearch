@@ -5,8 +5,8 @@ html{*overflow:auto;}
 .logo{float:left;margin-right:30px; height:33px;}
 /*input搜索区域*/
 .inputArea{float:left;position:relative;}
-.inputArea .searchInput{border:1px solid #bfbfbf;padding:0 15px;outline:none;height:35px;*line-height:35px;width:350px; background:url(../img/inputbg.png);font-size:14px;}
-.inputArea .searchButton{position:absolute;left:382px;top:0;*top:1px;*left:381px;width:106px;height:38px;background:url(../img/btn_min.png) no-repeat;border:none;cursor:pointer;}
+.inputArea .searchInput{border:1px solid #bfbfbf;padding:0 15px;outline:none;height:35px;*line-height:35px;width:350px; background:url(../images/inputbg.png);font-size:14px;}
+.inputArea .searchButton{position:absolute;left:382px;top:0;*top:1px;*left:381px;width:106px;height:38px;background:url(../images/btn_min.png) no-repeat;border:none;cursor:pointer;}
 
 /*返回高级搜索*/
 .inputArea .advanced{position:absolute;font-size:14px;left:500px;top:12px;width:60px;text-decoration:underline;}
@@ -31,20 +31,20 @@ html{*overflow:auto;}
 
 /*更多按钮*/
 .sideBar .more a:hover{text-decoration:none;}
-.sideBar .more .moreIcon{display:inline-block;position:relative;top:-1px;*top:-3px;left:2px;*left:-1px;width:9px;height:5px;background:url(../img/more.png);}
-.sideBar .more.show .moreIcon{background:url(../img/down.png);top:-2px;}
+.sideBar .more .moreIcon{display:inline-block;position:relative;top:-1px;*top:-3px;left:2px;*left:-1px;width:9px;height:5px;background:url(../images/more.png);}
+.sideBar .more.show .moreIcon{background:url(../images/down.png);top:-2px;}
 
 .sideBar .reset{padding-left:25px;}
 /*siderBar区域显隐控制*/
-.sideBar .sideBarShowHide{position:absolute;right:0px;top:20px;height:177px;width:1px; background:url(../img/line.png) right;}
-.sideBar .sideBarShowHide a{position:absolute;top:70px;left:-11px;display:inline-block;width:12px;height:31px;background:url(../img/lr.png);}
+.sideBar .sideBarShowHide{position:absolute;right:0px;top:20px;height:177px;width:1px; background:url(../images/line.png) right;}
+.sideBar .sideBarShowHide a{position:absolute;top:70px;left:-11px;display:inline-block;width:12px;height:31px;background:url(../images/lr.png);}
 
 .sideBar .sideBarShowHide a:hover{background-position:0 -31px;}
 
 /*左侧收起样式*/
 #main.sideBarHide .sideBar{margin-left:-191px;*margin-left:-182px;}
 #main.sideBarHide .sideBar .sideBarShowHide{-moz-transform:rotate(180deg); -o-transform:rotate(180deg); -webkit-transform:rotate(180deg); transform:rotate(180deg);}
-#main.sideBarHide .sideBar .sideBarShowHide a{*background:url(../img/ll.png);}
+#main.sideBarHide .sideBar .sideBarShowHide a{*background:url(../images/ll.png);}
 #main.sideBarHide .sideBar .sideBarShowHide a:hover{*background-position:0 -31px;}
 #main.sideBarHide .sideBar .sideBarShowHide{background:none;}
 
@@ -95,7 +95,7 @@ html{*overflow:auto;}
 
 
 /*立即搜索样式*/
-.subfieldContent .search{margin:45px 0 0 135px;width:130px;height:36px;background:url(../img/btnbg.png); font-weight:bold;border:none;border:1px solid #bfbfbf;line-height:36px;}
+.subfieldContent .search{margin:45px 0 0 135px;width:130px;height:36px;background:url(../images/btnbg.png); font-weight:bold;border:none;border:1px solid #bfbfbf;line-height:36px;}
 /*联想下拉区域*/
 .inputArea .dataList{display:none;position:absolute;left:0;top:42px;*top:43px;width:550px;padding:5px 0;background:#fff;border:1px solid #bfbfbf;border-top:none;}
 .inputArea .dataList li{padding:2px 15px;font-size:14px;}
