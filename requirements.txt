@@ -1,0 +1,16 @@
+certifi==2019.6.16
+chardet==3.0.4
+Django==2.2.2
+django-qiniu-storage==2.3.1
+elasticsearch==7.0.2
+elasticsearch-dsl==7.0.0
+idna==2.7
+ipaddress==1.0.22
+python-dateutil==2.8.0
+pytz==2019.1
+qiniu==7.2.4
+redis==3.2.1
+requests==2.22.0
+six==1.12.0
+sqlparse==0.3.0
+urllib3==1.25.3

@@ -105,7 +105,7 @@ class SearchView(View):
 
         # 通用部分
         # 实现搜索关键词keyword加1操作
-        redis_cli.zincrby("search_keywords_set", key_words)
+        redis_cli.zincrby("search_keywords_set", 1, key_words)
         # 获取topn个搜索词
         topn_search_clean = []
         topn_search = redis_cli.zrevrangebyscore(
@@ -188,7 +188,7 @@ class SearchView(View):
                                 "job_city",
                                 "degree_need"]}},
                     "from": (
-                                    page - 1) * 10,
+                        page - 1) * 10,
                     "size": 10,
                     "highlight": {
                         "pre_tags": ['<span class="keyWord">'],
@@ -230,7 +230,7 @@ class SearchView(View):
                                 "content",
                                 "author_name"]}},
                     "from": (
-                                    page - 1) * 10,
+                        page - 1) * 10,
                     "size": 10,
                     "highlight": {
                         "pre_tags": ['<span class="keyWord">'],
@@ -327,8 +327,8 @@ class SearchView(View):
                 hit_dict_answer["source_site"] = "知乎回答"
                 hit_list.append(hit_dict_answer)
             response_dict["question"]["hits"]["total"] = response_dict["question"]["hits"]["total"] + \
-                                                         response_dict["answer"]["hits"][
-                                                             "total"]
+                response_dict["answer"]["hits"][
+                "total"]
             response = response_dict["question"]
         total_nums = int(response["hits"]["total"])
 
