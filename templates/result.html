@@ -1,7 +1,7 @@
 
 <!DOCTYPE html >
 <html xmlns="http://www.w3.org/1999/xhtml">
-{% load staticfiles %}
+{% load static %}
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -20,9 +20,9 @@
     </div>
     <div class="nav">
     	<ul class="searchList">
-            <li class="searchItem {% ifequal s_type "article" %}current{% endifequal %}" data-type="article">伯乐文章</li>
+{#            <li class="searchItem {% ifequal s_type "article" %}current{% endifequal %}" data-type="article">伯乐文章</li>#}
             <li class="searchItem {% ifequal s_type "question" %}current{% endifequal %}" data-type="question">知乎问答</li>
-            <li class="searchItem {% ifequal s_type "job" %}current{% endifequal %}" data-type="job">拉勾职位</li>
+{#            <li class="searchItem {% ifequal s_type "job" %}current{% endifequal %}" data-type="job">拉勾职位</li>#}
         </ul>
     </div>
 	<div id="bd" class="ue-clear">
@@ -32,18 +32,18 @@
                 <div class="subfield">数据来源: </br>
                 实时已爬取数据统计</div>
                 <ul class="subfieldContext">
-                	<li>
-                    	<span class="name">伯乐在线</span>
-						<span class="unit">{{jobbole_count}}</span>
-                    </li>
+{#                	<li>#}
+{#                    	<span class="name">伯乐在线</span>#}
+{#						<span class="unit">{{jobbole_count}}</span>#}
+{#                    </li>#}
                     <li>
                     	<span class="name">知乎</span>
 						<span class="unit">{{zhihu_count}}</span>
                     </li>
-                    <li>
-                    	<span class="name">拉勾网</span>
-						<span class="unit">{{job_count}}</span>
-                    </li>
+{#                    <li>#}
+{#                    	<span class="name">拉勾网</span>#}
+{#						<span class="unit">{{job_count}}</span>#}
+{#                    </li>#}
 <!--                     <li class="more">
                     	<a href="javascript:;">
                         	<span class="text">更多</span>
@@ -112,7 +112,7 @@
                 	<h6>热门搜索</h6>
                     <ul class="historyList">
                         {% for search in topn_search %}
-                        <li><a href="/search?q={{ search }}&s_type=article">{{ search }}</a></li>
+                        <li><a href="/search?q={{ search }}&s_type=question">{{ search }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>

@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  mtianyan_elasticsearch:
+    restart: always
+    image: elasticsearch:7.9.1
+    volumes:
+      - "./db/es:/usr/share/elasticsearch/data"
+    environment:
+      - discovery.type=single-node
+    networks:
+      - search-spider
+  mtianyan_redis:
+    # 指定镜像
+    image: redis:4
+    volumes:
+      # 目录映射
+      - "./deploy_conf/redis:/usr/local/etc/redis"
+      - "./db/redis:/data"
+    command:
+      # 执行的命令
+      redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - search-spider
+
+  mtianyan_nginx:
+    restart: always
+    image: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./deploy_conf/nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - .:/PROJECT_ROOT
+    links:
+      - mtianyan_search:web
+    networks:
+      - search-spider
+
+
+  mtianyan_search:
+    restart: always
+    build: .
+    volumes:
+      - .:/PROJECT_ROOT
+      - ./log/uwsgi:/PROJECT_ROOT/log
+    command: uwsgi -i /PROJECT_ROOT/deploy_conf/uwsgi.ini
+    networks:
+      - search-spider
+
+networks:
+  search-spider:
+    external:
+      name: search-spider

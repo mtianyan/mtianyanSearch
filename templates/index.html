@@ -1,6 +1,6 @@
 <!DOCTYPE html >
 <html xmlns="http://www.w3.org/1999/xhtml">
-{% load  staticfiles %}
+{% load static %}
 <head>
 <meta name="baidu-site-verification" content="nPxypLjNNn" />
 <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
@@ -18,9 +18,9 @@
             </h1>
             <div class="nav ue-clear">
             	<ul class="searchList">
-                    <li class="searchItem current" data-type="article">伯乐文章</li>
-                    <li class="searchItem" data-type="question">知乎问答</li>
-                    <li class="searchItem" data-type="job">拉勾职位</li>
+{#                    <li class="searchItem current" data-type="article">伯乐文章</li>#}
+                    <li class="searchItem current" data-type="question">知乎问答</li>
+{#                    <li class="searchItem" data-type="job">拉勾职位</li>#}
                 </ul>
             </div>
             <div class="inputArea">
@@ -39,7 +39,7 @@
             	<p class="history">
                     <label>热门搜索：</label>
                     {% for search_word in topn_search %}
-                        <a href='/search?q={{ search_word }}&s_type=article'>{{ search_word }}</a>
+                        <a href='/search?q={{ search_word }}&s_type=question'>{{ search_word }}</a>
                     {% endfor %}
                 </p>
                 <p class="history mysearch">

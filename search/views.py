@@ -4,16 +4,18 @@ import json
 
 from django.utils.datastructures import OrderedSet
 from django.views.generic.base import View
-from search.models import JobboleBlogIndex, LagouJobIndex, ZhiHuQuestionIndex, ZhiHuAnswerIndex
+
+from FunPySearch.settings.local import ES_HOST, REDIS_HOST, REDIS_PASSWORD
+from search.models import ZhiHuQuestionIndex
 from django.http import HttpResponse
 from datetime import datetime
 import redis
 from elasticsearch import Elasticsearch
 from django.views.generic.base import RedirectView
 
-client = Elasticsearch(hosts=["localhost"])
+client = Elasticsearch(hosts=[ES_HOST])
 # 使用redis实现top-n排行榜
-redis_cli = redis.StrictRedis()
+redis_cli = redis.Redis(host=REDIS_HOST, password=REDIS_PASSWORD)
 
 
 class IndexView(View):
@@ -38,46 +40,7 @@ class SearchSuggest(View):
     def get(request):
         key_words = request.GET.get('s', '')
         current_type = request.GET.get('s_type', '')
-        if current_type == "article":
-            return_suggest_list = []
-            if key_words:
-                s = JobboleBlogIndex.search()
-                """fuzzy模糊搜索, fuzziness 编辑距离, prefix_length前面不变化的前缀长度"""
-                s = s.suggest('my_suggest', key_words, completion={
-                    "field": "suggest", "fuzzy": {
-                        "fuzziness": 2
-                    },
-                    "size": 10
-                })
-                suggestions = s.execute()
-                for match in suggestions.suggest.my_suggest[0].options[:10]:
-                    source = match._source
-                    return_suggest_list.append(source["title"])
-            return HttpResponse(
-                json.dumps(return_suggest_list),
-                content_type="application/json")
-        elif current_type == "job":
-            return_suggest_list = []
-            if key_words:
-                s = LagouJobIndex.search()
-                s = s.suggest('my_suggest', key_words, completion={
-                    "field": "suggest", "fuzzy": {
-                        "fuzziness": 2
-                    },
-                    "size": 10
-                })
-                suggestions = s.execute()
-                # 对于不同公司同名职位去重，提高用户体验
-                name_set = OrderedSet()
-                for match in suggestions.suggest.my_suggest[0].options[:10]:
-                    source = match._source
-                    name_set.add(source["title"])
-                for name in name_set:
-                    return_suggest_list.append(name)
-            return HttpResponse(
-                json.dumps(return_suggest_list),
-                content_type="application/json")
-        elif current_type == "question":
+        if current_type == "question":
             return_suggest_list = []
             if key_words:
                 s_question = ZhiHuQuestionIndex.search()
@@ -326,11 +289,10 @@ class SearchView(View):
                 hit_dict_answer["url"] = hit["_source"]["url"]
                 hit_dict_answer["source_site"] = "知乎回答"
                 hit_list.append(hit_dict_answer)
-            response_dict["question"]["hits"]["total"] = response_dict["question"]["hits"]["total"] + \
-                response_dict["answer"]["hits"][
-                "total"]
+            response_dict["question"]["hits"]["total"]["value"] = response_dict["question"]["hits"]["total"]["value"] + \
+                response_dict["answer"]["hits"]["total"]["value"]
             response = response_dict["question"]
-        total_nums = int(response["hits"]["total"])
+        total_nums = int(response["hits"]["total"]["value"])
 
         # 计算出总页数
         if (page % 10) > 0:

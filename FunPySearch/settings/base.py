@@ -53,7 +53,7 @@ ROOT_URLCONF = 'FunPySearch.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        'DIRS': [os.path.join(os.path.dirname(BASE_DIR), 'templates')]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -114,17 +114,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
-STATIC_URL = '/static/'
 MEDIA_ROOT = "/media/"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
-DEFAULT_FILE_STORAGE = 'qiniustorage.backends.QiniuMediaStorage'
-STATICFILES_STORAGE = 'qiniustorage.backends.QiniuStaticStorage'
-
-QINIU_ACCESS_KEY = 'h_r41Eu27LsUkO5lS99TLxWjwJg9CXA_Pz2dZ5k8'
-QINIU_SECRET_KEY = 'xp2UcNU0AGMYhMHCkaZKdnJUqSuq1EPqPaNPuf7Q'
-QINIU_BUCKET_NAME = 'search'
-QINIU_BUCKET_DOMAIN = 'searchstatic.mtianyan.cn'
-QINIU_SECURE_URL = 0
+if DEBUG:
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static')
+    ]
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')

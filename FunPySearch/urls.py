@@ -13,15 +13,15 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.urls import path, re_path
 from django.views.static import serve
 
-from FunPySearch.settings import MEDIA_ROOT
 from search.views import IndexView, SearchSuggest, SearchView, favicon_view
 
 urlpatterns = [
     path('favicon.ico', favicon_view),
-    re_path('media/(?P<path>.*)', serve, {"document_root": MEDIA_ROOT}),
+    re_path('media/(?P<path>.*)', serve, {"document_root": settings.MEDIA_ROOT}),
     path('', IndexView.as_view(), name="index"),
     path('suggest/', SearchSuggest.as_view(), name="suggest"),
     path('search/', SearchView.as_view(), name="search"),
