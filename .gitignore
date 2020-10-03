@@ -226,4 +226,4 @@ dmypy.json
 .idea
 ./log/
 ./db/
-./.idea/
+.idea
