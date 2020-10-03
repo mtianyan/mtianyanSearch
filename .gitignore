@@ -224,6 +224,6 @@ dmypy.json
 
 # My Ignore
 .idea
-./log/
-./db/
+log/
+db/
 .idea
