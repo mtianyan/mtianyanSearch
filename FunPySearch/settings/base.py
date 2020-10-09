@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -29,14 +29,16 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'search',
+    'user'
 ]
+
+AUTH_USER_MODEL = "user.UserProfile"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -49,11 +51,10 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'FunPySearch.urls'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(os.path.dirname(BASE_DIR), 'templates')]
+        'DIRS': [os.path.join(BASE_DIR, 'templates')]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -71,13 +72,32 @@ WSGI_APPLICATION = 'FunPySearch.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
+try:
+    var = os.environ["not_use_docker"]
+    UseDocker = False
+except KeyError:
+    UseDocker = True
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+if UseDocker:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'mtianyanSearch',
+            'USER': 'root',
+            'PASSWORD': 'mtianyanroot',
+            'HOST': '127.0.0.1'
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'mtianyanSearch',
+            'USER': 'root',
+            'PASSWORD': 'mtianyanroot',
+            'HOST': 'mysql'
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -115,9 +135,18 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 MEDIA_ROOT = "/media/"
+
 if DEBUG:
     STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'static')
     ]
 else:
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# 配置Broker
+if UseDocker:
+    BROKER_URL = 'redis://:mtianyanRedisRoot@127.0.0.1:6379/0'
+    BROKER_TRANSPORT = 'redis'
+else:
+    BROKER_URL = 'redis://:mtianyanRedisRoot@mtianyan_redis:6379/0'
+    BROKER_TRANSPORT = 'redis'

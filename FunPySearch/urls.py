@@ -18,6 +18,7 @@ from django.urls import path, re_path
 from django.views.static import serve
 
 from search.views import IndexView, SearchSuggest, SearchView, favicon_view
+from user.views import LoginView, LogoutView, RegisterView
 
 urlpatterns = [
     path('favicon.ico', favicon_view),
@@ -25,4 +26,7 @@ urlpatterns = [
     path('', IndexView.as_view(), name="index"),
     path('suggest/', SearchSuggest.as_view(), name="suggest"),
     path('search/', SearchView.as_view(), name="search"),
+    path('login/', LoginView.as_view(), name="login"),
+    path('logout/', LogoutView.as_view(), name="logout"),
+    path("register/", RegisterView.as_view(), name="register"),
 ]

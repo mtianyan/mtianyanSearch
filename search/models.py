@@ -11,12 +11,11 @@ my_analyzer = analyzer('ik_smart')
 class ZhiHuQuestionIndex(Document):
     """知乎问题"""
     suggest = Completion(analyzer=my_analyzer)
-
     question_id = Keyword()
     topics = Text(analyzer="ik_max_word")
     url = Keyword()
     title = Text(analyzer="ik_max_word")
-
+    title_keyword = Keyword()
     content = Text(analyzer="ik_max_word")
     answer_num = Integer()
     comments_num = Integer()

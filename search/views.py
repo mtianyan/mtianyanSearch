@@ -1,18 +1,23 @@
 import pickle
+
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
 import json
 
+from FunPySearch.settings.local import ES_HOST, REDIS_HOST, REDIS_PASSWORD
+from .tasks import gen_word2vec_save_to_mysql
 from django.utils.datastructures import OrderedSet
 from django.views.generic.base import View
-
-from FunPySearch.settings.local import ES_HOST, REDIS_HOST, REDIS_PASSWORD
-from search.models import ZhiHuQuestionIndex
+from search.models import ZhiHuQuestionIndex, ZhiHuAnswerIndex
 from django.http import HttpResponse
 from datetime import datetime
 import redis
 from elasticsearch import Elasticsearch
 from django.views.generic.base import RedirectView
 
+from user.models import KeyWord2Vec, UserProfile
+
+User = get_user_model()
 client = Elasticsearch(hosts=[ES_HOST])
 # 使用redis实现top-n排行榜
 redis_cli = redis.Redis(host=REDIS_HOST, password=REDIS_PASSWORD)
@@ -40,7 +45,46 @@ class SearchSuggest(View):
     def get(request):
         key_words = request.GET.get('s', '')
         current_type = request.GET.get('s_type', '')
-        if current_type == "question":
+        if current_type == "article":
+            return_suggest_list = []
+            if key_words:
+                s = JobboleBlogIndex.search()
+                """fuzzy模糊搜索, fuzziness 编辑距离, prefix_length前面不变化的前缀长度"""
+                s = s.suggest('my_suggest', key_words, completion={
+                    "field": "suggest", "fuzzy": {
+                        "fuzziness": 2
+                    },
+                    "size": 10
+                })
+                suggestions = s.execute()
+                for match in suggestions.suggest.my_suggest[0].options[:10]:
+                    source = match._source
+                    return_suggest_list.append(source["title"])
+            return HttpResponse(
+                json.dumps(return_suggest_list),
+                content_type="application/json")
+        elif current_type == "job":
+            return_suggest_list = []
+            if key_words:
+                s = LagouJobIndex.search()
+                s = s.suggest('my_suggest', key_words, completion={
+                    "field": "suggest", "fuzzy": {
+                        "fuzziness": 2
+                    },
+                    "size": 10
+                })
+                suggestions = s.execute()
+                # 对于不同公司同名职位去重，提高用户体验
+                name_set = OrderedSet()
+                for match in suggestions.suggest.my_suggest[0].options[:10]:
+                    source = match._source
+                    name_set.add(source["title"])
+                for name in name_set:
+                    return_suggest_list.append(name)
+            return HttpResponse(
+                json.dumps(return_suggest_list),
+                content_type="application/json")
+        elif current_type == "question":
             return_suggest_list = []
             if key_words:
                 s_question = ZhiHuQuestionIndex.search()
@@ -65,9 +109,48 @@ class SearchView(View):
 
     def get(self, request):
         key_words = request.GET.get("q", "")
-
+        try:
+            gen_word2vec_save_to_mysql.delay("small", key_words)
+        except:
+            print("异步添加word2vec失败,检查是否开启celery: celery -A ContentSearch worker -l debug")
+        try:
+            history_text = request.user.history
+            history_list = history_text.split(",")
+            upper_score_list = []
+            for history_one in history_list:
+                try:
+                    upper_score_list.append(history_one)
+                    try:
+                        key_words_vec_text = KeyWord2Vec.objects.get(keyword=history_one).keyword_word2vec
+                        key_words_vec_list = key_words_vec_text.split(",")
+                        for key_words_one in key_words_vec_list:
+                            upper_score_list.append(key_words_one)
+                    except:
+                        pass
+                except:
+                    pass
+            upper_score_set = set(upper_score_list)
+            upper_score_set_list = list(upper_score_set)
+            upper_score_set_list = [x for x in upper_score_set_list if x != '']
+            # upper score set 涨分列表
+            print(upper_score_set_list)
+            history_list.append(key_words)
+            history_new_set = set(history_list)
+            history_new_set_list = list(history_new_set)
+            history_new_txt = ",".join(history_new_set_list)
+            user = UserProfile.objects.get(id=request.user.id)
+            user.history = history_new_txt
+            user.save()
+        except:
+            history_new_set_list = []
+            upper_score_set_list = []
+        print("*********"*30)
+        history_new_set_list = [one for one in history_new_set_list if one.strip()]
+        upper_score_set_list = [one for one in upper_score_set_list if one.strip()]
+        print("*********"*30)
         # 通用部分
         # 实现搜索关键词keyword加1操作
+        print(key_words)
         redis_cli.zincrby("search_keywords_set", 1, key_words)
         # 获取topn个搜索词
         topn_search_clean = []
@@ -116,9 +199,22 @@ class SearchView(View):
                 request_timeout=60,
                 body={
                     "query": {
-                        "multi_match": {
-                            "query": key_words,
-                            "fields": ["tags", "title", "content"]
+                        "function_score": {
+                            "query": {
+                                "multi_match": {
+                                    "query": key_words,
+                                    "fields": ["title", "content"]
+                                },
+                            },
+                            "script_score": {
+
+                                "script": {
+                                    "params": {
+                                        "title_keyword": upper_score_set_list
+                                    },
+                                    "source": "double final_score=_score;int count=0;int total = params.title_keyword.size();while(count < total) { String upper_score_title = params.title_keyword[count]; if(doc['title_keyword'].value.contains(upper_score_title)){final_score = final_score+_score;}count++;}return final_score;"
+                                }
+                            }
                         }
                     },
                     "from": (page - 1) * 10,
@@ -133,46 +229,61 @@ class SearchView(View):
                     }
                 }
             )
-        elif s_type == "job":
-            response = client.search(
-                index="lagou_job",
-                request_timeout=60,
-                body={
-                    "query": {
-                        "multi_match": {
-                            "query": key_words,
-                            "fields": [
-                                "title",
-                                "tags",
-                                "job_desc",
-                                "job_advantage",
-                                "company_name",
-                                "job_addr",
-                                "job_city",
-                                "degree_need"]}},
-                    "from": (
-                        page - 1) * 10,
-                    "size": 10,
-                    "highlight": {
-                        "pre_tags": ['<span class="keyWord">'],
-                        "post_tags": ['</span>'],
-                        "fields": {
-                            "title": {},
-                            "job_desc": {},
-                            "company_name": {},
-                        }}})
         elif s_type == "question":
+            body = {
+                "query": {
+                    "function_score": {
+                        "query": {
+                            "multi_match": {
+                                "query": key_words,
+                                "fields": ["title", "content"]
+                            },
+                        },
+                        "script_score": {
+
+                            "script": {
+                                "params": {
+                                    "title_keyword": upper_score_set_list
+                                },
+                                "source": "double final_score=_score;int count=0;int total = params.title_keyword.size();while(count < total) { String upper_score_title = params.title_keyword[count]; if(doc['title_keyword'].value.contains(upper_score_title)){final_score = final_score+_score;}count++;}return final_score;"
+                            }
+                        }
+                    }
+                },
+                "from": (page - 1) * 10,
+                "size": 10,
+                "highlight": {
+                    "pre_tags": ['<span class="keyWord">'],
+                    "post_tags": ['</span>'],
+                    "fields": {
+                        "title": {},
+                        "content": {},
+                        "topics": {},
+                    }}}
+            print(json.dumps(body,ensure_ascii=False))
             response_dict = {"question": client.search(
                 index="zhihu_question",
                 request_timeout=60,
                 body={
                     "query": {
-                        "multi_match": {
-                            "query": key_words,
-                            "fields": [
-                                "title",
-                                "content",
-                                "topics"]}},
+                        "function_score": {
+                            "query": {
+                                "multi_match": {
+                                    "query": key_words,
+                                    "fields": ["title", "content"]
+                                },
+                            },
+                            "script_score": {
+
+                                "script": {
+                                    "params": {
+                                        "title_keyword": upper_score_set_list
+                                    },
+                                    "source": "double final_score=_score;int count=0;int total = params.title_keyword.size();while(count < total) { String upper_score_title = params.title_keyword[count]; if(doc['title_keyword'].value.contains(upper_score_title)){final_score = final_score+_score;}count++;}return final_score;"
+                                }
+                            }
+                        }
+                    },
                     "from": (page - 1) * 10,
                     "size": 10,
                     "highlight": {
@@ -182,26 +293,41 @@ class SearchView(View):
                             "title": {},
                             "content": {},
                             "topics": {},
-                        }}}), "answer": client.search(
-                index="zhihu_answer",
-                request_timeout=60,
-                body={
-                    "query": {
-                        "multi_match": {
-                            "query": key_words,
-                            "fields": [
-                                "content",
-                                "author_name"]}},
-                    "from": (
-                        page - 1) * 10,
-                    "size": 10,
-                    "highlight": {
-                        "pre_tags": ['<span class="keyWord">'],
-                        "post_tags": ['</span>'],
-                        "fields": {
-                            "content": {},
-                            "author_name": {},
-                        }}})}
+                        }}}),
+
+                "answer": client.search(
+                    index="zhihu_answer",
+                    request_timeout=60,
+                    body={
+                        "query": {
+                            "function_score": {
+                                "query": {
+                                    "multi_match": {
+                                        "query": key_words,
+                                        "fields": ["author_name", "content"]
+                                    },
+                                },
+                                "script_score": {
+
+                                    "script": {
+                                        "params": {
+                                            "title_keyword": upper_score_set_list
+                                        },
+                                        "source": "double final_score=_score;int count=0;int total = params.title_keyword.size();while(count < total) { String upper_score_title = params.title_keyword[count]; if(doc['author_name'].value.contains(upper_score_title)){final_score = final_score+_score;}count++;}return final_score;"
+                                    }
+                                }
+                            }
+                        },
+                        "from": (
+                                        page - 1) * 10,
+                        "size": 10,
+                        "highlight": {
+                            "pre_tags": ['<span class="keyWord">'],
+                            "post_tags": ['</span>'],
+                            "fields": {
+                                "content": {},
+                                "author_name": {},
+                            }}})}
 
         end_time = datetime.now()
         last_seconds = (end_time - start_time).total_seconds()
@@ -229,34 +355,6 @@ class SearchView(View):
                     hit_list.append(hit_dict)
                 except:
                     error_nums = error_nums + 1
-        elif s_type == "job":
-            for hit in response["hits"]["hits"]:
-                hit_dict = {}
-                try:
-                    if "title" in hit["highlight"]:
-                        hit_dict["title"] = "".join(hit["highlight"]["title"])
-                    else:
-                        hit_dict["title"] = hit["_source"]["title"]
-                    if "job_desc" in hit["highlight"]:
-                        hit_dict["content"] = "".join(
-                            hit["highlight"]["job_desc"][:150])
-                    else:
-                        hit_dict["content"] = hit["_source"]["job_desc"][:150]
-                    hit_dict["create_date"] = hit["_source"]["publish_time"]
-                    hit_dict["url"] = hit["_source"]["url"]
-                    hit_dict["score"] = hit["_score"]
-                    hit_dict["company_name"] = hit["_source"]["company_name"]
-                    hit_dict["source_site"] = "拉勾网"
-                    hit_list.append(hit_dict)
-                except:
-                    hit_dict["title"] = hit["_source"]["title"]
-                    hit_dict["content"] = hit["_source"]["job_desc"]
-                    hit_dict["create_date"] = hit["_source"]["publish_time"]
-                    hit_dict["url"] = hit["_source"]["url"]
-                    hit_dict["score"] = hit["_score"]
-                    hit_dict["company_name"] = hit["_source"]["company_name"]
-                    hit_dict["source_site"] = "拉勾网"
-                    hit_list.append(hit_dict)
         elif s_type == "question":
             for hit in response_dict["question"]["hits"]["hits"]:
                 """问题"""
@@ -290,7 +388,7 @@ class SearchView(View):
                 hit_dict_answer["source_site"] = "知乎回答"
                 hit_list.append(hit_dict_answer)
             response_dict["question"]["hits"]["total"]["value"] = response_dict["question"]["hits"]["total"]["value"] + \
-                response_dict["answer"]["hits"]["total"]["value"]
+                                                                  response_dict["answer"]["hits"]["total"]["value"]
             response = response_dict["question"]
         total_nums = int(response["hits"]["total"]["value"])
 
@@ -299,6 +397,7 @@ class SearchView(View):
             page_nums = int(total_nums / 10) + 1
         else:
             page_nums = int(total_nums / 10)
+
         return render(request, "result.html", {"page": page,
                                                "all_hits": hit_list,
                                                "key_words": key_words,
@@ -310,6 +409,7 @@ class SearchView(View):
                                                "s_type": s_type,
                                                "job_count": job_count,
                                                "zhihu_count": zhihu_count,
+                                               "history_list": history_new_set_list,
                                                })
 
 
